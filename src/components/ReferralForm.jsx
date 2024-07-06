@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ReferralForm = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
@@ -14,9 +17,42 @@ const ReferralForm = ({ isOpen, onClose }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission logic here
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/referrals`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status !== 200) {
+        throw new Error("Failed to submit referral");
+      }
+
+      // Show success toast message
+      toast.success("Referral submitted successfully!");
+
+      // Clear form data
+      setFormData({
+        referrerName: "",
+        referrerEmail: "",
+        refereeName: "",
+        refereeEmail: "",
+      });
+
+      // Close the modal after submission
+      setTimeout(onClose, 2000); // Adjust timeout as needed
+    } catch (error) {
+      console.error(error);
+      // Show error toast message
+      toast.error("Failed to submit referral. Please try again.");
+    }
   };
 
   return (
@@ -84,6 +120,7 @@ const ReferralForm = ({ isOpen, onClose }) => {
             </button>
           </div>
         </form>
+        <ToastContainer />
       </div>
     </div>
   );
